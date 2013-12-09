@@ -32,7 +32,6 @@ $(function(){
   var activeVehicles = {};
 
   var success = function(data) {
-  	//busDots.clearLayers();
   	var data = data.data.list;
     var oldActiveVehicles = activeVehicles;
     activeVehicles = {};
@@ -70,7 +69,7 @@ $(function(){
   		}
   	});
 
-    //Remove stale vehicles
+    // Remove stale vehicles
     _.each(oldActiveVehicles, function (content, vehicle) {
       if (content) {
         busDots.removeLayer(content.marker);

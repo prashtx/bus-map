@@ -19,5 +19,14 @@
     <script src="js/app.js"></script>
 
 
+    <script type="text/template" id="t-bus-info">
+<p>
+GTFS Vehicle ID: <%= bus.vehicleId %>
+<br />
+GTFS Trip ID: <%= bus.tripId %>
+<br />
+Next stop <%= bus.tripStatus.nextStop %> in <%= bus.tripStatus.nextStopTimeOffset %> seconds
+</p>
+    </script>
   </body>
 </html>

@@ -26,27 +26,57 @@ $(function(){
     if (d >= 10) { s.fillColor = "#ff6d49"};
     if (d >= 20) { s.fillColor ="#e20027" };
     return s;
-  }
+  };
+
+  var busInfoTemplate = _.template($('#t-bus-info').html());
+  var activeVehicles = {};
 
   var success = function(data) {
-  	busDots.clearLayers();
+  	//busDots.clearLayers();
   	var data = data.data.list;
+    var oldActiveVehicles = activeVehicles;
+    activeVehicles = {};
   	_.each(data, function(bus){
   		if (bus.tripStatus !== null) {
+        var content = oldActiveVehicles[bus.vehicleId];
+        var ll = [bus.tripStatus.position.lat, bus.tripStatus.position.lon];
+        var popupContent = busInfoTemplate({ bus: bus });
+        if (content) {
+          // Update existing vehicles
+          content.marker.setLatLng(ll);
+          oldActiveVehicles[bus.vehicleId] = null;
+          content.popup.setContent(popupContent);
+        } else {
+          // Add new vehicles
+          // Set the style.
+          var s = style;
+          if (bus.tripStatus.predicted === true) {
+            var deviation = Math.abs(bus.tripStatus.scheduleDeviation) / 60;
 
-  			// Show it on the map
-  			var ll = [bus.tripStatus.position.lat, bus.tripStatus.position.lon];
-  			var s = style;
-  			if (bus.tripStatus.predicted === true) {
-  				var deviation = Math.abs(bus.tripStatus.scheduleDeviation) / 60;
+            s = getStyle(deviation);
+          }
 
-  				s = getStyle(deviation);
-  			}
+          content = {};
+          content.marker = L.circleMarker(ll, s);
 
-  			var marker = L.circleMarker(ll, s);
-  			busDots.addLayer(marker);
+          content.popup = L.popup(popupContent);
+          content.marker.bindPopup(content.popup);
+
+          // Show it on the map
+          busDots.addLayer(content.marker);
+        }
+        activeVehicles[bus.vehicleId] = content;
+        
   		}
   	});
+
+    //Remove stale vehicles
+    _.each(oldActiveVehicles, function (content, vehicle) {
+      if (content) {
+        busDots.removeLayer(content.marker);
+      }
+    });
+
   }
 
   var fetch = function() {
